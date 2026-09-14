@@ -3,11 +3,14 @@ const app=express();
 const mongoose=require("mongoose");
 const listing=require("./models/listing.js")
 const path=require("path");
+const ejsMate=require("ejs-mate");
 const methodOverride=require("method-override");
 app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.set("views",path.join(__dirname,"views"));
 app.set("view engine","ejs");
+app.engine('ejs', ejsMate);
+app.use(express.static(path.join(__dirname,"/public")));
 main().then((res)=>{
     console.log("connected to mongoDb dataBase");
 }).catch((err)=>{
@@ -61,10 +64,17 @@ res.render("listings/edit.ejs",{oldList});
 app.put("/listings/:id",async(req,res)=>{
     let{id}=req.params;
     await listing.findByIdAndUpdate(id,{...req.body.listing});
-res.redirect("/listings");
+res.redirect(`/listings/${id}`);
 
 })
 
+//Delete listings
+app.delete("/listings/:id",async(req,res)=>{
+    let {id}=req.params;
+    let deletingList= await listing.findByIdAndDelete(id);
+    console.log(deletingList);
+    res.redirect("/listings");
+})
 
 
 
